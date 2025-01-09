@@ -7,9 +7,13 @@ class playGame extends Phaser.Scene {
     this.cannonshot = 0;
     this.menuActive = true;
     this.Scoretemp = 0;
-    
+    this.duckExist = false;
+    this.duckRun = false
+    this.endX = false;
   }
   create() {
+    
+    
     this.menuActive = true;
     this.Scoretemp = 0;
     this.bg_1 = this.add.tileSprite(0, 0, game.config.width, 240, "bg_1");
@@ -41,7 +45,7 @@ class playGame extends Phaser.Scene {
     
     this.uiContainer.alpha = 0;
     this.mapLocater = this.add.sprite(100, 5, "mapLoc");
-    this.map = this.add.sprite(210, 1, "map");
+    this.map = this.add.sprite(80, 1, "map");
     this.map.setScale(2);
     this.uiContainer.add(this.map);
     this.uiContainer.add(this.mapLocater);
@@ -52,14 +56,37 @@ class playGame extends Phaser.Scene {
     this.cannondown = this.physics.add.sprite(-150, game.config.height/2 + 60, "cannondown");
     this.cannon.setScale(2);
     this.cannondown.setScale(2);
-
+    
+    if(globalDuck >= 1){
+      this.duck = this.add.sprite(-300, game.config.height / 2 - 80, "duckplayer");
+      this.duck.play("duckPFly");
+      globalDuck -= 1;
+      this.duckRun = true;
+      this.breadcooldown = this.add.sprite(180, 200, "breadcooldown");
+      this.breadcooldown.anims.play("breadAnim");
+      this.breadcooldown.anims.pause();
+      
+      this.uiContainer.add(this.breadcooldown);
+    }
+    else{
+      this.duckRun = false;
+      console.log(this.duckRun);
+    }
+    if(this.duckRun == true){
+      this.duckExist = true;
+    }
+    else{
+      this.duckExist = false
+      this.duckRun = false;
+    }
+    
 
     
     this.menuBg = this.add.graphics();
     this.menuBg.fillStyle(0x0000, 1);
     this.menuBg.fillRect(-200, 0, game.config.width +20, game.config.height); 
     this.menuBg.alpha = 0.5;
-    this.Name = this.add.bitmapText(-50,game.config.height /2 - 40, "pixelFont", "GAME", 50);
+    this.Name = this.add.bitmapText(-110,game.config.height /2 - 40, "pixelFont", "Jungle Trail", 50);
     this.Start = this.add.bitmapText(-80,game.config.height /2, "pixelFont", "PRESS ENTER TO START \n", 20);
     this.scoreText = this.add.bitmapText(-50,game.config.height /2 + 20, "pixelFont", "SCORE: ", 20);
     this.textbg = this.add.sprite(150, 5, "textbg").setInteractive();
@@ -75,12 +102,8 @@ class playGame extends Phaser.Scene {
     this.menuContainer.add(this.textbg);
     this.menuContainer.add(this.Shop);
     this.menuContainer.add(this.scoreText);
-   
-    /*this.duck = this.add.sprite(20, game.config.height / 2 - 80, "duckplayer");
-    this.duck.play("duckPFly");*/
-
     
-   
+    
 
     this.Cam =this.cameras.main
     this.Cam.startFollow(this.player);
@@ -94,7 +117,7 @@ class playGame extends Phaser.Scene {
       this.music = this.sound.add("bgmusic", {volume: 0.25});
       var musicConfig = {
           mute: false,
-          volume: 0,
+          volume: 0.25,
           rate: 1,
           detune: 0,
           seek: 0,
@@ -111,7 +134,7 @@ class playGame extends Phaser.Scene {
     
   }
   handlePointerMove(pointer){
-    if(this.menuActive == false){
+    if(this.menuActive == false && this.duckRun == false){
       this.input.on('pointermove', function(pointer) {
         let cursor = pointer
         let angle = Phaser.Math.Angle.Between(this.cannon.x, this.cannon.y, cursor.x + this.cameras.main.scrollX, cursor.y + this.cameras.main.scrollY);
@@ -121,7 +144,7 @@ class playGame extends Phaser.Scene {
     }
   }
   handlePointerDown(pointer){
-    if(this.menuActive == false && this.cannonshot == 0){
+    if(this.menuActive == false && this.cannonshot == 0 && this.duckRun == false){
       this.input.on('pointerdown', function(pointer) {
         if(this.cannonshot == 0){
           this.player.alpha = 1;
@@ -150,8 +173,11 @@ class playGame extends Phaser.Scene {
   }
 
   update() {
+    this.bg_1.tilePositionX = this.Cam.scrollX * .3;
+    this.bg_2.tilePositionX = this.Cam.scrollX * .6;
+    this.ground.tilePositionX = this.Cam.scrollX;
     
-    this.Scoretemp = this.player.x;
+    this.Scoretemp = this.player.x - 500;
    
     globalScore = Math.max(0, Math.ceil(this.Scoretemp ));
     
@@ -160,11 +186,36 @@ class playGame extends Phaser.Scene {
     let formattedScore = String(globalScore2).padStart(6, '0');
     this.scoreText.text = "SCORE: " + formattedScore;
     
-    if(this.menuActive == false){
+    if(this.menuActive == false ){
       this.uiContainer.alpha = 1;
-
+      
       
       if (this.cursors.up.isDown && this.fuelLevel > 0 && this.cannonshot == 1) {
+        this.fuelLevel -= 4; 
+        this.updateFuelIndicator();
+        this.player.y -= this.boostSpeed - 2;
+      }
+      else{
+        if (this.player.y < this.ground.y && this.cannonshot == 1) {
+          if(this.duckRun == false){
+            this.player.y += this.playerSpeed;
+          }
+          if(this.duckRun == true){
+            this.player.y += this.playerSpeed - 0.8;
+          }
+        }
+        else {
+        this.player.y = this.ground.y - 20;
+        }
+      
+      }
+    }
+    if(this.menuActive == false && this.duckRun == true){
+      this.uiContainer.alpha = 1;
+      
+      
+      if (this.cursors.up.isDown && this.fuelLevel > 0 && !this.breadcooldown) {
+
         this.fuelLevel -= 4; 
         this.updateFuelIndicator();
         this.player.y -= this.boostSpeed - 2;
@@ -179,52 +230,136 @@ class playGame extends Phaser.Scene {
       
       }
     }
-    if(this.player.y >= this.ground.y - 1 && this.player.y <= this.ground.y + 1 && this.cannonshot == 1){
+    if(this.player.y >= this.ground.y - 1 && this.player.y && this.cannonshot == 1 && this.endX == false){
       this.scene.start("PlayGame");
       this.uiContainer.alpha = 0;
       this.cannonshot = 0;
     }
 
-    this.bg_1.tilePositionX = this.Cam.scrollX * .3;
-    this.bg_2.tilePositionX = this.Cam.scrollX * .6;
-    this.ground.tilePositionX = this.Cam.scrollX;
-
-   this.uiContainer.x = this.player.x - 50;
+    
+    if(this.duckRun == false || this.duckExist == false){
+      this.uiContainer.x = this.player.x - 50;
+    }else if(this.duck && (this.duck.x  > this.cannon.x + 40)) {
+      this.uiContainer.x = this.duck.x - 50;
+    }
+    
   
     
 
     
     
    
+    if(this.duckExist == false || this.duckRun == false){
+      const mapWidth = this.map.width; 
+      const playerRelativeX = this.player.x / (game.config.width * 20);
+      this.mapLocater.x = playerRelativeX;
+      
+      const mapLocatorX = this.map.x + playerRelativeX * mapWidth * 2 ;
+     
+      this.mapLocater.x = mapLocatorX - 90;
+  
+      
+      const mapLeftBound = this.map.x/2 - 80;
+      const mapRightBound = this.map.x + mapWidth/2 +35;
+      this.mapLocater.x = Phaser.Math.Clamp(this.mapLocater.x, mapLeftBound, mapRightBound);
+      
+      if(this.mapLocater.x == mapRightBound && this.endX == false){
+        this.sceneNew();
+        this.endX = true;
 
-    const mapWidth = this.map.width; 
-    const playerRelativeX = this.player.x / (game.config.width * 50);
-    this.mapLocater.x = playerRelativeX;
+      }
+    }
+    if(this.duckExist == true && this.duckRun == true){
+      const mapWidth = this.map.width; 
+      const playerRelativeX = this.duck.x / (game.config.width * 16);
+      this.mapLocater.x = playerRelativeX;
+      
+      const mapLocatorX = this.map.x + playerRelativeX * mapWidth * 2 ;
+     
+      this.mapLocater.x = mapLocatorX - 90;
+  
+      
+      const mapLeftBound = this.map.x/2 - 80;
+      const mapRightBound = this.map.x + mapWidth/2 + 35;
+      this.mapLocater.x = Phaser.Math.Clamp(this.mapLocater.x, mapLeftBound, mapRightBound);
+      if(this.mapLocater.x == mapRightBound){
+        this.Cam.stopFollow(this.duck);
+        this.Cam.main.fadeOut(1000, 0, 0, 0);
+        this.Cam.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+          this.scene.start("gameOver");
+        });
+      }
+    }
     
-    const mapLocatorX = this.map.x + playerRelativeX * mapWidth * 2 ;
-   
-    this.mapLocater.x = mapLocatorX - 90;
-
-    
-    const mapLeftBound = this.map.x/2 - 30;
-    const mapRightBound = this.map.x + mapWidth/2 -10;
-    this.mapLocater.x = Phaser.Math.Clamp(this.mapLocater.x, mapLeftBound, mapRightBound);
-
     if(Phaser.Input.Keyboard.JustDown(this.EnterKey)){
       this.menuContainer.alpha = 0;
       this.Shop.destroy();
       this.textbg.destroy();
       this.menuActive = false;
+      console.log(this.breadcooldown)
+      if(this.breadcooldown != null && this.duckRun == true){
+        if(!this.breadcooldown.anims.isPlaying){
+          this.breadcooldown.play("breadAnim");
+         
+        }
+      }
     }
     
-   
+    if(this.duck && this.menuActive == false && this.duckExist && this.duckRun == true){
+      console.log(this.duckRun);
+      this.duck.x += 2;  
+      let amplitude = 10; 
+      let frequency = 0.05; 
+      this.duck.y = 60 + Math.sin(this.duck.x * frequency) * amplitude; 
+      if (this.duck && this.duck.x > this.cannon.x + 40) {
+        this.Cam.startFollow(this.duck);
+      } else {
+        this.Cam.startFollow(this.player);
+      }
+      if(this.breadcooldown){
+        
+        if(!this.breadcooldown.anims.isPlaying){
+          this.player.x = this.duck.x;
+          if(this.duck){
+            this.player.y = this.duck.y;
+          }
+          
+          this.player.alpha = 1;
+          this.cannonshot = 1;
+          this.duck.destroy();
+          this.duckExist = false;
+          this.breadcooldown.destroy();
+        }
+      }
+        
+    }
+    if(this.duckExist == false && this.duckRun == true){
+      this.player.x += this.playerSpeed + 5;
+      this.breadcooldown.destroy();
+      this.Cam.startFollow(this.player);
+    }
     
     
   }
   updateFuelIndicator() {
     this.fuelIndicator.clear();
     this.fuelIndicator.fillStyle(0xff0000, 1);
-    this.fuelIndicator.fillRect(-10, -10, this.fuelLevel /globalJetpack, 20); 
+    if(globalJetpack == 0){
+      this.fuelIndicator.fillRect(-145, -10, 0, 20); 
+    }
+    if(globalJetpack > 0){
+      this.fuelIndicator.fillRect(-145, -10, this.fuelLevel/globalJetpack, 20); 
+    }
+    
+    
+  }
+  sceneNew(){
+    console.log("end");
+    this.Cam.stopFollow(this.player);
+    this.cameras.main.fadeOut(1000, 0, 0, 0);
+    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+        this.scene.start("gameOver");
+    });
   }
   updateCannon(angle){
     this.cannon.rotation = angle;

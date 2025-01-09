@@ -53,6 +53,7 @@ class Shop extends Phaser.Scene {
     this.cannonContainer.add(this.cannonText);
     this.cannonContainer.add(this.cannonText2);
     this.cannonContainer.alpha = 0;
+    this.cannon.alpha = 0;
 
     this.duck  = this.add.sprite(130, 305, "bread").setInteractive();
     this.duck.setScale(3);
@@ -63,6 +64,7 @@ class Shop extends Phaser.Scene {
     this.duckContainer.add(this.duckText);
     this.duckContainer.add(this.duckText2);
     this.duckContainer.alpha = 0;
+    this.duck.alpha = 0;
 
     this.ArrowLeft = this.add.bitmapText(60,290, "pixelFont", "<", 50);
     this.ArrowRight = this.add.bitmapText(game.config.width - 60,290, "pixelFont", ">",50).setInteractive();
@@ -86,25 +88,24 @@ class Shop extends Phaser.Scene {
     
 
     this.collizion.on('pointerdown', () => {
-      console.log("move")
       if (this.movetextIndic == 0) {
         this.movetextIndic = 1;  
       } 
     });
     this.collizionUp.on('pointerdown', () => {
-      console.log("move")
       if (this.movetextIndic == 2) {
         this.movetextIndic = 3;  
       }
     });
     this.arrowRightZone.on('pointerdown', () => {
-      console.log("fade");
       this.fadeRight();
 
     });
 
     this.arrowLeftZone.on('pointerdown', () => {
-      console.log("fade");
+      if(this.movetextIndic==0){
+        this.jetpack.alpha = 1
+      }
       this.fadeLeft();
     
     });
@@ -138,7 +139,6 @@ class Shop extends Phaser.Scene {
               onComplete: () => {
                 this.shakingItem = false;
                 this.cannondown.clearTint();
-                console.log("nic")
               }
           });
         
@@ -151,7 +151,7 @@ class Shop extends Phaser.Scene {
         globalScore -= this.jetpackPrice;
         this.paySound.play();
         globalJetpack += 1;
-        this.jetpackPrice *= 2;  
+        this.jetpackPrice = Math.ceil(1.5 * this.jetpackPrice);  
         this.JetpackText2.setText(`this item boosts\n  you off the\n      ground\n (limited fuel)\n     cost: ${this.jetpackPrice}`);
       }else if (this.shakingItem == false) {
         this.shakingItem = true
@@ -168,7 +168,6 @@ class Shop extends Phaser.Scene {
             onComplete: () => {
               this.shakingItem = false;
               this.jetpack.clearTint();
-              console.log("nic")
             }
         });
         
@@ -198,7 +197,6 @@ class Shop extends Phaser.Scene {
             onComplete: () => {
               this.shakingItem = false;
               this.duck.clearTint();
-              console.log("nic")
             }
         });
         
@@ -208,7 +206,7 @@ class Shop extends Phaser.Scene {
       
   }
   update(){
-    console.log(this.shopItems)
+    
     let formattedScore = String(globalScore2).padStart(6, '0');
     this.scoreText.text = "SCORE: " + formattedScore;
     if(this.movetextIndic == 1 && this.menuBg.y > 120){
@@ -230,6 +228,7 @@ class Shop extends Phaser.Scene {
       this.duckContainer.y += 5;
       
     }    
+
     if(this.menuBg.y <= 120){
       this.movetextIndic = 2;
       this.MenuText2.angle = 90;
@@ -263,8 +262,8 @@ class Shop extends Phaser.Scene {
     }
   }
   fadeLeft(){
-    console.log("fadeLeft");
-    if(this.shopItems == 0){
+
+    if(this.jetpack.alpha > 0){
       this.tweens.add({
         targets: [this.jetpack, this.JetpackText,this.JetpackText2],
         alpha: 0,
@@ -287,8 +286,7 @@ class Shop extends Phaser.Scene {
    
     }
 
-    if(this.shopItems == 2){
-      console.log(this.shopItems);
+    if(this.duck.alpha == 1){
       this.tweens.add({
         targets: [this.duck, this.duckText,this.duckText2],
         alpha: 0,
@@ -311,8 +309,7 @@ class Shop extends Phaser.Scene {
       });
      
     }
-    if(this.shopItems == 1){
-      console.log(this.shopItems);
+    if(this.cannon.alpha == 1){
       this.tweens.add({
         targets: [this.cannon,this.cannondown, this.cannonText,this.cannonText2],
         alpha: 0,
@@ -334,7 +331,7 @@ class Shop extends Phaser.Scene {
     }
   }
   fadeRight(){
-    if(this.shopItems == 0){
+    if(this.jetpack.alpha == 1){
       this.tweens.add({
         targets: [this.jetpack, this.JetpackText,this.JetpackText2],
         alpha: 0,
@@ -357,7 +354,7 @@ class Shop extends Phaser.Scene {
       });
     }
 
-    if(this.shopItems == 1){
+    if(this.cannon.alpha == 1){
       this.tweens.add({
         targets: [this.cannon, this.cannondown, this.cannonText,this.cannonText2],
         alpha: 0,
@@ -378,7 +375,7 @@ class Shop extends Phaser.Scene {
         }
       });
     }
-      if(this.shopItems == 2){
+      if(this.duck.alpha == 1){
         this.tweens.add({
           targets: [this.duck, this.duckText,this.duckText2],
           alpha: 0,

@@ -1,7 +1,8 @@
-globalScore = 0;
+globalScore = 200000;
 globalCannonStrength = 0;
-globalJetpack = 0;
+globalJetpack = 3;
 globalScore2 = 0;
+globalDuck = 0;
 var game;
 window.onload = function(){
   let gameConfig = {
