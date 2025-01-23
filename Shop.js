@@ -93,6 +93,7 @@ class Shop extends Phaser.Scene {
       } 
     });
     this.collizionUp.on('pointerdown', () => {
+      console.log("hej")
       if (this.movetextIndic == 2) {
         this.movetextIndic = 3;  
       }
@@ -206,7 +207,9 @@ class Shop extends Phaser.Scene {
       
   }
   update(){
-    
+    if(this.movetextIndic <2){
+      this.collizionUp.disableInteractive();
+    }
     let formattedScore = String(globalScore2).padStart(6, '0');
     this.scoreText.text = "SCORE: " + formattedScore;
     if(this.movetextIndic == 1 && this.menuBg.y > 120){

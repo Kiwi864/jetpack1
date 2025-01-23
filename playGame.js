@@ -10,9 +10,11 @@ class playGame extends Phaser.Scene {
     this.duckExist = false;
     this.duckRun = false
     this.endX = false;
+    this.eagleActive = false;
+    this.eagleWarning = null;
+    this.eagle = null; 
   }
   create() {
-    
     
     this.menuActive = true;
     this.Scoretemp = 0;
@@ -35,7 +37,7 @@ class playGame extends Phaser.Scene {
     this.physics.world.enable(this.player);
     this.player.play("fly");
 
-    this.uiContainer = this.add.container(this.player.x - 50, 10);
+    this.uiContainer = this.add.container(145, 10);
    
     this.fuelLevel = 100 * globalJetpack; 
     this.fuelIndicator = this.add.graphics();
@@ -57,6 +59,16 @@ class playGame extends Phaser.Scene {
     this.cannon.setScale(2);
     this.cannondown.setScale(2);
     
+    this.eagleWarning = this.add.sprite(game.config.width / 2, 50, "warning");
+    this.eagleWarning.setAlpha(0);
+    this.eagleWarning.setScrollFactor(0);
+    this.time.addEvent({
+      delay: Phaser.Math.Between(5000, 8000),
+      callback: this.spawnEagle,
+      callbackScope: this,
+      loop: true,
+    });
+
     if(globalDuck >= 1){
       this.duck = this.add.sprite(-300, game.config.height / 2 - 80, "duckplayer");
       this.duck.play("duckPFly");
@@ -161,7 +173,7 @@ class playGame extends Phaser.Scene {
           }
   
          
-          const gravity = 50; 
+          const gravity = 30; 
           this.player.body.gravity.y = gravity;
           this.cannonshot = 1;
           
@@ -171,8 +183,8 @@ class playGame extends Phaser.Scene {
       },this);
     }
   }
-
   update() {
+
     this.bg_1.tilePositionX = this.Cam.scrollX * .3;
     this.bg_2.tilePositionX = this.Cam.scrollX * .6;
     this.ground.tilePositionX = this.Cam.scrollX;
@@ -198,7 +210,7 @@ class playGame extends Phaser.Scene {
       else{
         if (this.player.y < this.ground.y && this.cannonshot == 1) {
           if(this.duckRun == false){
-            this.player.y += this.playerSpeed;
+            this.player.y += this.playerSpeed - 0.3;
           }
           if(this.duckRun == true){
             this.player.y += this.playerSpeed - 0.8;
@@ -235,20 +247,10 @@ class playGame extends Phaser.Scene {
       this.uiContainer.alpha = 0;
       this.cannonshot = 0;
     }
-
-    
-    if(this.duckRun == false || this.duckExist == false){
-      this.uiContainer.x = this.player.x - 50;
-    }else if(this.duck && (this.duck.x  > this.cannon.x + 40)) {
-      this.uiContainer.x = this.duck.x - 50;
-    }
-    
-  
-    
-
-    
-    
-   
+      this.uiContainer.setScrollFactor(0);
+      if (this.orol && this.player) {
+        this.physics.world.overlap(this.player, this.orol, this.playerDied, null, this);
+      }
     if(this.duckExist == false || this.duckRun == false){
       const mapWidth = this.map.width; 
       const playerRelativeX = this.player.x / (game.config.width * 20);
@@ -339,7 +341,14 @@ class playGame extends Phaser.Scene {
       this.Cam.startFollow(this.player);
     }
     
-    
+    if (this.orol && this.orol.x < -50) {
+      this.orol.destroy();
+      this.eagleActive = false;
+    }
+    if(this.eagleWarning){
+      this.eagleWarning.x = this.Cam.width - 30;
+    }
+
   }
   updateFuelIndicator() {
     this.fuelIndicator.clear();
@@ -350,8 +359,17 @@ class playGame extends Phaser.Scene {
     if(globalJetpack > 0){
       this.fuelIndicator.fillRect(-145, -10, this.fuelLevel/globalJetpack, 20); 
     }
-    
-    
+    this.time.addEvent({
+      delay: 10000,
+      callback:async () => {
+        if(this.player.body.gravity>10)
+        this.player.body.gravity.y -= 2;
+        if(this.player.Speed <0.7)
+        this.playerSpeed -= 0.3
+      },
+      callbackScope: this,
+      loop: true,
+    });
   }
   sceneNew(){
     console.log("end");
@@ -364,6 +382,52 @@ class playGame extends Phaser.Scene {
   updateCannon(angle){
     this.cannon.rotation = angle;
   }
-  
+  spawnEagle() {
+    if(this.duckExist == false && this.player.x > 1000 ){
+      console.log(this.eagleActive);
+      if (this.eagleActive) return;
+      const eagleY = Phaser.Math.Between(50, game.config.height - 50);
+      this.eagleActive = true;
+      this.eagleWarning.setAlpha(1);
+      this.eagleWarning.y = eagleY;
+      this.eagleWarning.x = this.Cam.scrollX + this.Cam.width - 50;
+      this.time.delayedCall(2000, () => {
+        this.eagleWarning.setAlpha(0);
+        const warningTween = this.tweens.add({
+          targets: this.eagleWarning,
+          alpha: { from: 0, to: 1 },
+          duration: 100,            
+          yoyo: true,                
+          repeat: 5                  
+        }); 
+        this.time.delayedCall(100 * 6, () => {
+          this.eagleWarning.setAlpha(0); 
+          warningTween.stop();
+          this.orol = this.physics.add.sprite(this.Cam.scrollX + this.Cam.width, eagleY, "orol");
+
+          this.orol.setScale(1);
+          this.orol.setVelocityX(-200);
+          this.physics.world.enable(this.orol);
+          console.log(this.orol.x)
+          this.orol.play("orolAnim")
+        });
+
+        
+    
+
+        this.physics.add.collider(this.player, this.orol, this.playerDied, null, this);
+        if(this.orol){
+          if (this.orol.x < this.Cam.scrollX - 50 ) {
+            this.orol.destroy();
+            this.eagleActive = false;
+          }
+        }
+        
+      });
+    }
+  }
+  playerDied() {
+    this.scene.start("PlayGame");
+  }
  
 }

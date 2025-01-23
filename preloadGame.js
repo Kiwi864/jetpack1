@@ -62,7 +62,11 @@ class preloadGame extends Phaser.Scene{
       this.load.spritesheet("duck", "assets/spritesheets/duck.png",{
         frameWidth: 98,
         frameHeight: 98
-      });  
+      }); 
+      this.load.spritesheet("orol", "assets/spritesheets/orol.png",{
+        frameWidth: 70,
+        frameHeight: 70
+      });
       this.load.spritesheet("duckplayer", "assets/spritesheets/duckplayer.png",{
         frameWidth: 98,
         frameHeight: 98
@@ -92,6 +96,10 @@ class preloadGame extends Phaser.Scene{
         frameWidth: 70,
         frameHeight: 124
     });  
+    this.load.spritesheet("warning", "assets/spritesheets/warning.png",{
+      frameWidth: 40,
+      frameHeight: 40
+    }); 
     
     this.load.bitmapFont("pixelFont", "assets/font/font.png", "assets/font/font.xml");
     this.load.bitmapFont("pixelFont2", "assets/font/font2.png", "assets/font/font2.xml");
@@ -130,6 +138,12 @@ class preloadGame extends Phaser.Scene{
         frames: this.anims.generateFrameNumbers("breadcooldown"),
         frameRate: 5,
         repeat: 0
+      });
+      this.anims.create({
+        key: "orolAnim",
+        frames: this.anims.generateFrameNumbers("orol"),
+        frameRate: 10,
+        repeat: -1
       });
     }
 }
