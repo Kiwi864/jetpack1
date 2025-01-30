@@ -65,7 +65,7 @@ class preloadGame extends Phaser.Scene{
       }); 
       this.load.spritesheet("orol", "assets/spritesheets/orol.png",{
         frameWidth: 70,
-        frameHeight: 70
+        frameHeight: 29
       });
       this.load.spritesheet("duckplayer", "assets/spritesheets/duckplayer.png",{
         frameWidth: 98,

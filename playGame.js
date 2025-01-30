@@ -13,6 +13,7 @@ class playGame extends Phaser.Scene {
     this.eagleActive = false;
     this.eagleWarning = null;
     this.eagle = null; 
+    this.gravity = 0;
   }
   create() {
     
@@ -143,7 +144,21 @@ class playGame extends Phaser.Scene {
       this.scene.start("Shop");
       console.log("shop")
     });
-    
+    this.time.addEvent({
+      delay: 5000,
+      callback:async () => {
+        if(this.player.body.gravity.y >10)
+          this.gravity += 10;
+          this.player.body.gravity.y = 30- this.gravity;
+        console.log(this.player.body.gravity.y)
+        if(this.player.Speed <0.7){
+          this.playerSpeed -= 0.3
+        }
+        
+      },
+      callbackScope: this,
+      loop: true,
+    });
   }
   handlePointerMove(pointer){
     if(this.menuActive == false && this.duckRun == false){
@@ -173,8 +188,7 @@ class playGame extends Phaser.Scene {
           }
   
          
-          const gravity = 30; 
-          this.player.body.gravity.y = gravity;
+          this.player.body.gravity.y = 30 - this.gravity;
           this.cannonshot = 1;
           
         
@@ -184,7 +198,7 @@ class playGame extends Phaser.Scene {
     }
   }
   update() {
-
+    
     this.bg_1.tilePositionX = this.Cam.scrollX * .3;
     this.bg_2.tilePositionX = this.Cam.scrollX * .6;
     this.ground.tilePositionX = this.Cam.scrollX;
@@ -348,6 +362,7 @@ class playGame extends Phaser.Scene {
     if(this.eagleWarning){
       this.eagleWarning.x = this.Cam.width - 30;
     }
+    
 
   }
   updateFuelIndicator() {
@@ -359,17 +374,7 @@ class playGame extends Phaser.Scene {
     if(globalJetpack > 0){
       this.fuelIndicator.fillRect(-145, -10, this.fuelLevel/globalJetpack, 20); 
     }
-    this.time.addEvent({
-      delay: 10000,
-      callback:async () => {
-        if(this.player.body.gravity>10)
-        this.player.body.gravity.y -= 2;
-        if(this.player.Speed <0.7)
-        this.playerSpeed -= 0.3
-      },
-      callbackScope: this,
-      loop: true,
-    });
+    
   }
   sceneNew(){
     console.log("end");
@@ -428,6 +433,7 @@ class playGame extends Phaser.Scene {
   }
   playerDied() {
     this.scene.start("PlayGame");
+    this.eagleActive = false;
   }
  
 }
