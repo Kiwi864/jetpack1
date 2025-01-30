@@ -1,6 +1,6 @@
 globalScore = 0;
-globalCannonStrength = 0;
-globalJetpack = 0;
+globalCannonStrength = 3;
+globalJetpack = 100;
 globalScore2 = 0;
 globalDuck = 0;
 var game;
