@@ -173,31 +173,16 @@ class playGame extends Phaser.Scene {
   handlePointerDown(pointer){
     if(this.menuActive == false && this.cannonshot == 0 && this.duckRun == false){
       if (this.menuActive == false && this.cannonshot == 0 && this.duckRun == false) {
-        let angle = Phaser.Math.Angle.Between(
-            this.cannon.x, this.cannon.y, 
-            pointer.x + this.cameras.main.scrollX, 
-            pointer.y + this.cameras.main.scrollY
-        );
-
+        let angle = Phaser.Math.Angle.Between(this.cannon.x, this.cannon.y,pointer.x + this.cameras.main.scrollX, pointer.y + this.cameras.main.scrollY);
         this.shootSound.play();
         this.player.alpha = 1;
         this.player.x = this.cannon.x;
         this.player.y = this.cannon.y;
-
         const launchSpeed = globalCannonStrength ? 400: 350 + globalCannonStrength;
-        this.player.body.setVelocity(
-            Math.cos(angle) * launchSpeed, 
-            Math.sin(angle) * launchSpeed
-        );
-  
-         
+        this.player.body.setVelocity(Math.cos(angle) * launchSpeed,Math.sin(angle) * launchSpeed);
           this.player.body.setGravityY(30);
           this.cannonshot = 1;
-          
-        
-        }
-       
-      
+      }
     }
   }
   update() {
