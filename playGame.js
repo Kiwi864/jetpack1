@@ -165,6 +165,9 @@ class playGame extends Phaser.Scene {
       this.input.on('pointermove', function(pointer) {
         let cursor = pointer
         let angle = Phaser.Math.Angle.Between(this.cannon.x, this.cannon.y, cursor.x + this.cameras.main.scrollX, cursor.y + this.cameras.main.scrollY);
+        let minAngle = Phaser.Math.DegToRad(-40); 
+        let maxAngle = Phaser.Math.DegToRad(10);
+        angle = Phaser.Math.Clamp(angle, minAngle, maxAngle);
         this.updateCannon(angle)
       },this);
     
@@ -174,6 +177,9 @@ class playGame extends Phaser.Scene {
     if(this.menuActive == false && this.cannonshot == 0 && this.duckRun == false){
       if (this.menuActive == false && this.cannonshot == 0 && this.duckRun == false) {
         let angle = Phaser.Math.Angle.Between(this.cannon.x, this.cannon.y,pointer.x + this.cameras.main.scrollX, pointer.y + this.cameras.main.scrollY);
+        let minAngle = Phaser.Math.DegToRad(-40); 
+        let maxAngle = Phaser.Math.DegToRad(10);
+        angle = Phaser.Math.Clamp(angle, minAngle, maxAngle);
         this.shootSound.play();
         this.player.alpha = 1;
         this.player.x = this.cannon.x;
