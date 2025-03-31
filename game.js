@@ -18,6 +18,10 @@ window.onload = function(){
           }
       }
     },
+    scale: {
+      mode: Phaser.Scale.FIT, 
+      autoCenter: Phaser.Scale.CENTER_BOTH
+    },
     scene: [preloadGame, playGame, GameOver,Shop]
   }
   game = new Phaser.Game(gameConfig);
